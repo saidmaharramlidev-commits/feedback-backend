@@ -2,7 +2,7 @@ import express from 'express';
 import { PORT } from './config/env.js';
 import userRouter from './routes/user.route.js';
 import connectToDatabase from './database/mongodb.js';
-import errorMiddleware from '../recurrlyBackend/middlewares/error.middleware.js';
+import errorMiddleware from './middleware/error.middleware.js';
 import arcjetMiddleware from './middleware/arcjet.middleware.js';
 import feedbackRouter from './routes/feedback.route.js';
 import followRouter from './routes/follow.route.js';
