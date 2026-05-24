@@ -1,8 +1,20 @@
 import { config } from "dotenv";
 
-config({
-    path: `.env.${process.env.NODE_ENV || 'development'}.local`
-})
+// only load .env file in development
+if (process.env.NODE_ENV !== 'production') {
+    config({
+        path: `.env.${process.env.NODE_ENV || 'development'}.local`
+    })
+}
 
-
-export const { PORT, NODE_ENV, DB_URL, JWT_SECRET, JWT_EXPIRES_IN, ARCJET_KEY, ARCJET_ENV } = process.env
+export const {
+    PORT,
+    NODE_ENV,
+    DB_URL,
+    JWT_SECRET,
+    JWT_EXPIRES_IN,
+    ARCJET_KEY,
+    ARCJET_ENV,
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+    CLERK_SECRET_KEY
+} = process.env
