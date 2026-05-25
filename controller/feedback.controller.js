@@ -93,3 +93,81 @@ export const deleteFeedback = async (req, res, next) => {
         next(error);
     }
 };
+
+
+
+export const toggleLikeFeedback = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { clerkId } = req.body; // who is liking
+
+        if (!clerkId) {
+            return res.status(400).json({
+                success: false,
+                message: "clerkId is required"
+            });
+        }
+
+        const user = await User.findOne({ clerkId });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const feedback = await Feedback.findById(id);
+        if (!feedback) {
+            return res.status(404).json({
+                success: false,
+                message: "Feedback not found"
+            });
+        }
+
+        // only the receiver can like their own feedbacks
+        if (feedback.receiverId.toString() !== user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Not allowed"
+            });
+        }
+
+        const isAlreadyLiked = feedback.isLiked;
+
+        if (isAlreadyLiked) {
+            // unlike — restore TTL so it expires normally
+            await Feedback.findByIdAndUpdate(id, {
+                isLiked: false,
+                expiresAt: new Date(Date.now() + 86400 * 1000)
+            });
+
+            await User.findByIdAndUpdate(user._id, {
+                $pull: { favoriteFeedbacks: feedback._id }
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Feedback unliked"
+            });
+
+        } else {
+            // like — remove TTL so it never expires
+            await Feedback.findByIdAndUpdate(id, {
+                isLiked: true,
+                expiresAt: null
+            });
+
+            await User.findByIdAndUpdate(user._id, {
+                $push: { favoriteFeedbacks: feedback._id }
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Feedback liked and saved permanently"
+            });
+        }
+
+    } catch (error) {
+        next(error);
+    }
+};

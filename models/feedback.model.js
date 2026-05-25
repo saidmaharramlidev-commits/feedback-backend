@@ -13,14 +13,19 @@ const feedbackSchema = new mongoose.Schema(
             minlength: 2,
             maxlength: 500,
             trim: true,
+        },
+        isLiked: {
+            type: Boolean,
+            default: false
+        },
+        expiresAt: {
+            type: Date,
+            default: () => new Date(Date.now() + 86400 * 1000)
         }
-
     }, { timestamps: true }
-
 )
 
-feedbackSchema.index({ createdAt: 1 }, { expireAfterSeconds: 86400 })
-
+feedbackSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0, sparse: true })
 const Feedback = mongoose.model('Feedback', feedbackSchema)
 
 export default Feedback

@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema(
             lowercase: true,
             match: [/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers and underscores']
         },
+        favoriteFeedbacks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Feedback' }],
         email: {
             type: String,
             required: [true, 'Email is required'],
