@@ -22,6 +22,13 @@ export const sendFeedback = async (req, res, next) => {
             });
         }
 
+        if (!receiver.isAcceptingFeedback) {
+            return res.status(403).json({
+                success: false,
+                message: "This user is not accepting feedback"
+            });
+        }
+
         const feedback = await Feedback.create({
             receiverId: receiver._id,
             text
@@ -166,6 +173,30 @@ export const toggleLikeFeedback = async (req, res, next) => {
                 message: "Feedback liked and saved permanently"
             });
         }
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+export const getLikedFeedbacks = async (req, res, next) => {
+    try {
+        const clerkId = req.auth.userId;
+
+        const user = await User.findOne({ clerkId }).populate("favoriteFeedbacks");
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: user.favoriteFeedbacks
+        });
 
     } catch (error) {
         next(error);

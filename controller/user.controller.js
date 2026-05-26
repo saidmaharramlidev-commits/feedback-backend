@@ -103,3 +103,31 @@ export const updateUser = async (req, res, next) => {
         next(error);
     }
 };
+
+
+export const searchUsers = async (req, res, next) => {
+    try {
+        const { q } = req.query;
+
+        if (!q) {
+            return res.status(400).json({
+                success: false,
+                message: "Search query is required"
+            });
+        }
+
+        const users = await User.find({
+            username: { $regex: q, $options: "i" } // case insensitive
+        })
+            .select("username bio avatarUrl")
+            .limit(20);
+
+        return res.status(200).json({
+            success: true,
+            data: users
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
