@@ -4,7 +4,10 @@ export const getUserByUsername = async (req, res, next) => {
     try {
         const { username } = req.params;
 
-        const user = await User.findOne({ username }).select("-password");
+        const user = await User.findOne({ username })
+            .select("-password")
+            .populate(user.showFollowers ? "followers" : "")
+            .populate(user.showFollowing ? "following" : "");
 
         if (!user) {
             return res.status(404).json({
@@ -15,7 +18,11 @@ export const getUserByUsername = async (req, res, next) => {
 
         return res.status(200).json({
             success: true,
-            data: user
+            data: {
+                ...user.toObject(),
+                followers: user.showFollowers ? user.followers : [],
+                following: user.showFollowing ? user.following : [],
+            }
         });
 
     } catch (error) {
@@ -57,7 +64,7 @@ export const updateUser = async (req, res, next) => {
     try {
         const userId = req.auth.userId;
 
-        const allowedUpdates = ["username", "email", "bio", "avatarUrl", "isAcceptingFeedback"]; // whitelist
+        const allowedUpdates = ["username", "email", "bio", "avatarUrl", "isAcceptingFeedback", "showFollowers", "showFollowing"]; // whitelist
 
         const updates = {};
 
