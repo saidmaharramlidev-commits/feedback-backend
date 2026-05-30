@@ -27,20 +27,16 @@ export const getUserByUsername = async (req, res, next) => {
 
 export const getMe = async (req, res, next) => {
     try {
-        const userId = req.auth.userId;
+        const clerkId = req.auth.userId;
 
-        const user = await User.findById(userId).select("-password");
+        const user = await User.findOne({ clerkId }).select("-password");
 
         if (!user) {
             return res.status(404).json({
                 success: false,
-
                 message: "User not found"
             });
         }
-
-
-
 
         return res.status(200).json({
             success: true,
