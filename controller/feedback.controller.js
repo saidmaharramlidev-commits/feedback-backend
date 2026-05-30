@@ -106,7 +106,8 @@ export const deleteFeedback = async (req, res, next) => {
 export const toggleLikeFeedback = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { clerkId } = req.body; // who is liking
+        const clerkId = req.auth?.userId;
+
 
         if (!clerkId) {
             return res.status(400).json({
