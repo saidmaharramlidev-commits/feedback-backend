@@ -138,3 +138,39 @@ export const searchUsers = async (req, res, next) => {
         next(error);
     }
 };
+
+export const syncUser = async (req, res, next) => {
+    try {
+        const { clerkId, username, email } = req.body;
+
+        if (!clerkId || !username || !email) {
+            return res.status(400).json({
+                success: false,
+                message: "clerkId, username and email are required"
+            });
+        }
+
+        const existingUser = await User.findOne({ clerkId });
+
+        if (existingUser) {
+            return res.status(200).json({
+                success: true,
+                data: existingUser
+            });
+        }
+
+        const user = await User.create({
+            clerkId,
+            username,
+            email,
+        });
+
+        return res.status(201).json({
+            success: true,
+            data: user
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
