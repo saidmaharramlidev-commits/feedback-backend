@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema(
             maxLength: [30, 'Username cannot exceed 30 characters'],
             unique: true,
             lowercase: true,
-            match: [/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers and underscores']
+            match: [/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores and hyphens']
         },
         favoriteFeedbacks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Feedback' }],
         email: {
