@@ -12,22 +12,16 @@ const app = express();
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use('/users/sync', userRouter)
-app.use(arcjetMiddleware)
 app.use(clerkMiddleware())
-
+app.use(arcjetMiddleware)
 
 app.get('/', (req, res) => {
-    res.send({
-        message: 'Welcome to Feedback App'
-    })
+    res.send({ message: 'Welcome to Feedback App' })
 })
 
-
-app.use('/users', userRouter)
+app.use('/users', userRouter)    // ← just one registration
 app.use("/users", followRouter)
 app.use('/feedbacks', feedbackRouter)
-
 
 app.use(errorMiddleware)
 

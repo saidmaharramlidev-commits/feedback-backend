@@ -4,16 +4,10 @@ export const getUserByUsername = async (req, res, next) => {
     try {
         const { username } = req.params;
 
-        const user = await User.findOne({ username })
-            .select("-password")
-            .populate(user.showFollowers ? "followers" : "")
-            .populate(user.showFollowing ? "following" : "");
+        const user = await User.findOne({ username }).select("-password")
 
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
+            return res.status(404).json({ success: false, message: "User not found" });
         }
 
         return res.status(200).json({
