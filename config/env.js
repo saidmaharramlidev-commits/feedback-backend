@@ -16,5 +16,6 @@ export const {
     ARCJET_KEY,
     ARCJET_ENV,
     CLERK_PUBLISHABLE_KEY,
-    CLERK_SECRET_KEY
+    CLERK_SECRET_KEY,
+    CLERK_WEBHOOK_SECRET
 } = process.env

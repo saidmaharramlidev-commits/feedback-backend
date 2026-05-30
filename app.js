@@ -7,9 +7,11 @@ import arcjetMiddleware from './middleware/arcjet.middleware.js';
 import feedbackRouter from './routes/feedback.route.js';
 import followRouter from './routes/follow.route.js';
 import { clerkMiddleware } from '@clerk/express';
-
+import webhookRouter from './routes/webhook.route.js';
 
 const app = express();
+app.use('/webhooks', webhookRouter)
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(arcjetMiddleware)
