@@ -12,6 +12,7 @@ const app = express();
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use('/users/sync', userRouter)
 app.use(arcjetMiddleware)
 app.use(clerkMiddleware())
 
