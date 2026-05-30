@@ -45,14 +45,21 @@ export const sendFeedback = async (req, res, next) => {
     }
 };
 
-
-
 export const getMyFeedbacks = async (req, res, next) => {
     try {
-        const userId = req.auth.userId;
+        const clerkId = req.auth.userId;
+
+        // ← find user by clerkId first to get MongoDB _id
+        const user = await User.findOne({ clerkId });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
 
         const feedbacks = await Feedback.find({
-            receiverId: userId
+            receiverId: user._id  // ← use MongoDB _id
         }).sort({ createdAt: -1 });
 
         return res.status(200).json({
@@ -65,15 +72,21 @@ export const getMyFeedbacks = async (req, res, next) => {
     }
 };
 
-
-
 export const deleteFeedback = async (req, res, next) => {
     try {
-        const userId = req.auth.userId;
+        const clerkId = req.auth.userId;
         const { id } = req.params;
 
-        const feedback = await Feedback.findById(id);
+        // ← find user by clerkId first
+        const user = await User.findOne({ clerkId });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
 
+        const feedback = await Feedback.findById(id);
         if (!feedback) {
             return res.status(404).json({
                 success: false,
@@ -81,8 +94,8 @@ export const deleteFeedback = async (req, res, next) => {
             });
         }
 
-        // only receiver can delete
-        if (feedback.receiverId.toString() !== userId) {
+        // ← compare with MongoDB _id
+        if (feedback.receiverId.toString() !== user._id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: "Not allowed"
@@ -101,18 +114,15 @@ export const deleteFeedback = async (req, res, next) => {
     }
 };
 
-
-
 export const toggleLikeFeedback = async (req, res, next) => {
     try {
         const { id } = req.params;
         const clerkId = req.auth?.userId;
 
-
         if (!clerkId) {
             return res.status(400).json({
                 success: false,
-                message: "clerkId is required"
+                message: "Unauthorized"
             });
         }
 
@@ -132,7 +142,6 @@ export const toggleLikeFeedback = async (req, res, next) => {
             });
         }
 
-        // only the receiver can like their own feedbacks
         if (feedback.receiverId.toString() !== user._id.toString()) {
             return res.status(403).json({
                 success: false,
@@ -143,32 +152,25 @@ export const toggleLikeFeedback = async (req, res, next) => {
         const isAlreadyLiked = feedback.isLiked;
 
         if (isAlreadyLiked) {
-            // unlike — restore TTL so it expires normally
             await Feedback.findByIdAndUpdate(id, {
                 isLiked: false,
                 expiresAt: new Date(Date.now() + 86400 * 1000)
             });
-
             await User.findByIdAndUpdate(user._id, {
                 $pull: { favoriteFeedbacks: feedback._id }
             });
-
             return res.status(200).json({
                 success: true,
                 message: "Feedback unliked"
             });
-
         } else {
-            // like — remove TTL so it never expires
             await Feedback.findByIdAndUpdate(id, {
                 isLiked: true,
                 expiresAt: null
             });
-
             await User.findByIdAndUpdate(user._id, {
                 $push: { favoriteFeedbacks: feedback._id }
             });
-
             return res.status(200).json({
                 success: true,
                 message: "Feedback liked and saved permanently"
@@ -179,7 +181,6 @@ export const toggleLikeFeedback = async (req, res, next) => {
         next(error);
     }
 };
-
 
 export const getLikedFeedbacks = async (req, res, next) => {
     try {

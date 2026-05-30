@@ -28,10 +28,8 @@ export const getUserByUsername = async (req, res, next) => {
 export const getMe = async (req, res, next) => {
     try {
         const clerkId = req.auth.userId;
-        console.log("Looking for clerkId:", clerkId)
 
         const user = await User.findOne({ clerkId }).select("-password");
-        console.log("Found user:", user)
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -53,13 +51,11 @@ export const getMe = async (req, res, next) => {
 
 export const updateUser = async (req, res, next) => {
     try {
-        const userId = req.auth.userId;
+        const clerkId = req.auth.userId;
 
-        const allowedUpdates = ["username", "email", "bio", "avatarUrl", "isAcceptingFeedback", "showFollowers", "showFollowing"]; // whitelist
-
+        const allowedUpdates = ["username", "email", "bio", "avatarUrl", "isAcceptingFeedback", "showFollowers", "showFollowing"];
         const updates = {};
 
-        // pick only allowed fields from req.body
         for (let key of allowedUpdates) {
             if (req.body[key] !== undefined) {
                 updates[key] = req.body[key];
@@ -73,11 +69,9 @@ export const updateUser = async (req, res, next) => {
             });
         }
 
-        // check username uniqueness (only if username is being updated)
         if (updates.username) {
             const existingUser = await User.findOne({ username: updates.username });
-
-            if (existingUser && existingUser._id.toString() !== userId) {
+            if (existingUser && existingUser.clerkId !== clerkId) {
                 return res.status(409).json({
                     success: false,
                     message: "Username already taken"
@@ -85,8 +79,9 @@ export const updateUser = async (req, res, next) => {
             }
         }
 
-        const updatedUser = await User.findByIdAndUpdate(
-            userId,
+        // ← find by clerkId not _id
+        const updatedUser = await User.findOneAndUpdate(
+            { clerkId },
             { $set: updates },
             { new: true }
         ).select("-password");
