@@ -28,9 +28,10 @@ export const getUserByUsername = async (req, res, next) => {
 export const getMe = async (req, res, next) => {
     try {
         const clerkId = req.auth.userId;
+        console.log("Looking for clerkId:", clerkId)
 
         const user = await User.findOne({ clerkId }).select("-password");
-
+        console.log("Found user:", user)
         if (!user) {
             return res.status(404).json({
                 success: false,
