@@ -11,7 +11,7 @@ feedbackRouter.get("/liked", requireAuth(), getLikedFeedbacks);
 feedbackRouter.post("/:username", sendFeedback);
 
 feedbackRouter.delete("/:id", requireAuth(), deleteFeedback);
-feedbackRouter.patch("/:id/like", toggleLikeFeedback)
+feedbackRouter.patch("/:id/like", requireAuth(), toggleLikeFeedback)
 
 
 
