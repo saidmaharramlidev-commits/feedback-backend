@@ -59,7 +59,8 @@ export const getMyFeedbacks = async (req, res, next) => {
         }
 
         const feedbacks = await Feedback.find({
-            receiverId: user._id  // ← use MongoDB _id
+            receiverId: user._id,
+            isLiked: false
         }).sort({ createdAt: -1 });
 
         return res.status(200).json({
