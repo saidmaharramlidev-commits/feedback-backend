@@ -1,11 +1,8 @@
 import { config } from "dotenv";
 
-// only load .env file in development
-if (process.env.NODE_ENV !== 'production') {
-    config({
-        path: `.env.${process.env.NODE_ENV || 'development'}.local`
-    })
-}
+config({
+    path: `.env.${process.env.NODE_ENV || 'development'}.local`
+})
 
 export const {
     PORT,

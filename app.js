@@ -1,3 +1,4 @@
+import './config/env.js'
 import express from 'express';
 import { PORT } from './config/env.js';
 import userRouter from './routes/user.route.js';
@@ -7,6 +8,8 @@ import arcjetMiddleware from './middleware/arcjet.middleware.js';
 import feedbackRouter from './routes/feedback.route.js';
 import followRouter from './routes/follow.route.js';
 import { clerkMiddleware } from '@clerk/express';
+
+console.log("CLERK_SECRET_KEY loaded:", !!process.env.CLERK_SECRET_KEY)
 
 const app = express();
 

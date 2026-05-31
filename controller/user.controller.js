@@ -29,6 +29,15 @@ export const getMe = async (req, res, next) => {
     try {
         const clerkId = req.auth.userId;
 
+        console.log(clerkId)
+
+        if (!clerkId) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized - no Clerk user"
+            });
+        }
+
         const user = await User.findOne({ clerkId }).select("-password");
         if (!user) {
             return res.status(404).json({
