@@ -1,5 +1,5 @@
-import User from "../models/user.model.js";
 import Feedback from "../models/feedback.model.js";
+import User from "../models/user.model.js";
 
 export const sendFeedback = async (req, res, next) => {
     try {
@@ -47,7 +47,7 @@ export const sendFeedback = async (req, res, next) => {
 
 export const getMyFeedbacks = async (req, res, next) => {
     try {
-        const clerkId = req.auth.userId;
+        const clerkId = req.auth().userId;
 
         // ← find user by clerkId first to get MongoDB _id
         const user = await User.findOne({ clerkId });
