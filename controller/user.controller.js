@@ -27,7 +27,7 @@ export const getUserByUsername = async (req, res, next) => {
 
 export const getMe = async (req, res, next) => {
     try {
-        const clerkId = req.auth.userId;
+        const clerkId = req.auth().userId;
 
         console.log(clerkId)
 
@@ -60,7 +60,7 @@ export const getMe = async (req, res, next) => {
 
 export const updateUser = async (req, res, next) => {
     try {
-        const clerkId = req.auth.userId;
+        const clerkId = req.auth().userId;
 
         const allowedUpdates = ["username", "email", "bio", "avatarUrl", "isAcceptingFeedback", "showFollowers", "showFollowing"];
         const updates = {};

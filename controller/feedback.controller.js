@@ -74,7 +74,7 @@ export const getMyFeedbacks = async (req, res, next) => {
 
 export const deleteFeedback = async (req, res, next) => {
     try {
-        const clerkId = req.auth.userId;
+        const clerkId = req.auth().userId;
         const { id } = req.params;
 
         // ← find user by clerkId first
@@ -117,7 +117,7 @@ export const deleteFeedback = async (req, res, next) => {
 export const toggleLikeFeedback = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const clerkId = req.auth?.userId;
+        const clerkId = req.auth()?.userId;
 
         if (!clerkId) {
             return res.status(400).json({
@@ -184,7 +184,7 @@ export const toggleLikeFeedback = async (req, res, next) => {
 
 export const getLikedFeedbacks = async (req, res, next) => {
     try {
-        const clerkId = req.auth.userId;
+        const clerkId = req.auth().userId;
 
         const user = await User.findOne({ clerkId }).populate("favoriteFeedbacks");
 

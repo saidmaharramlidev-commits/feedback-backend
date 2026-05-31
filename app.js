@@ -9,7 +9,6 @@ import feedbackRouter from './routes/feedback.route.js';
 import followRouter from './routes/follow.route.js';
 import { clerkMiddleware } from '@clerk/express';
 
-console.log("CLERK_SECRET_KEY loaded:", !!process.env.CLERK_SECRET_KEY)
 
 const app = express();
 
