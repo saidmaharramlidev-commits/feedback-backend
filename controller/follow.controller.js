@@ -29,17 +29,14 @@ export const toggleFollow = async (req, res, next) => {
             });
         }
 
-
-
         const isFollowing = currentUser.following.includes(targetUser._id);
 
         if (isFollowing) {
-            // unfollow
-            await User.findByIdAndUpdate(userId, {
+            await User.findByIdAndUpdate(currentUser._id, {
                 $pull: { following: targetUser._id }
             });
             await User.findByIdAndUpdate(targetUser._id, {
-                $pull: { followers: userId }
+                $pull: { followers: currentUser._id }
             });
 
             return res.status(200).json({
@@ -47,12 +44,11 @@ export const toggleFollow = async (req, res, next) => {
                 message: "Unfollowed successfully"
             });
         } else {
-            // follow
-            await User.findByIdAndUpdate(userId, {
+            await User.findByIdAndUpdate(currentUser._id, {
                 $push: { following: targetUser._id }
             });
             await User.findByIdAndUpdate(targetUser._id, {
-                $push: { followers: userId }
+                $push: { followers: currentUser._id }
             });
 
             return res.status(200).json({
