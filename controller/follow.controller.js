@@ -3,38 +3,33 @@ import User from "../models/user.model.js";
 export const toggleFollow = async (req, res, next) => {
     try {
         const { username } = req.params;
-        const { userId } = req.body; // who is following
+        const clerkId = req.auth().userId;
 
-        if (!userId) {
-            return res.status(400).json({
+        if (!clerkId) {
+            return res.status(401).json({
                 success: false,
-                message: "userId is required"
+                message: "Unauthorized"
             });
         }
 
         const targetUser = await User.findOne({ username });
         if (!targetUser) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
+            return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        // prevent following yourself
-        if (targetUser._id.toString() === userId) {
+        const currentUser = await User.findOne({ clerkId });
+        if (!currentUser) {
+            return res.status(404).json({ success: false, message: "Follower user not found" });
+        }
+
+        if (targetUser._id.toString() === currentUser._id.toString()) {
             return res.status(400).json({
                 success: false,
                 message: "You cannot follow yourself"
             });
         }
 
-        const currentUser = await User.findById(userId);
-        if (!currentUser) {
-            return res.status(404).json({
-                success: false,
-                message: "Follower user not found"
-            });
-        }
+
 
         const isFollowing = currentUser.following.includes(targetUser._id);
 
