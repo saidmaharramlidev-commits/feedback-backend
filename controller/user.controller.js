@@ -109,10 +109,10 @@ export const updateUser = async (req, res, next) => {
     }
 };
 
-
 export const searchUsers = async (req, res, next) => {
     try {
         const { q } = req.query;
+        const clerkId = req.auth().userId;
 
         if (!q) {
             return res.status(400).json({
@@ -122,7 +122,8 @@ export const searchUsers = async (req, res, next) => {
         }
 
         const users = await User.find({
-            username: { $regex: q, $options: "i" } // case insensitive
+            username: { $regex: q, $options: "i" },
+            clerkId: { $ne: clerkId } // ✅ exclude current user
         })
             .select("username bio avatarUrl")
             .limit(20);
