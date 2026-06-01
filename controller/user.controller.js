@@ -41,7 +41,7 @@ export const getMe = async (req, res, next) => {
             });
         }
 
-        const user = await User.findOne({ clerkId }).select("-password");
+        const user = await User.findOne({ clerkId }).select("-password").populate("following", "_id");;
         if (!user) {
             return res.status(404).json({
                 success: false,
