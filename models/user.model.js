@@ -41,6 +41,10 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: true
         },
+        followersOnly: {
+            type: Boolean,
+            default: false
+        },
         showFollowers: { type: Boolean, default: true },
         showFollowing: { type: Boolean, default: true },
 

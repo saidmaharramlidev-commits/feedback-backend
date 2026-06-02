@@ -25,8 +25,35 @@ export const sendFeedback = async (req, res, next) => {
         if (!receiver.isAcceptingFeedback) {
             return res.status(403).json({
                 success: false,
-                message: "This user is not accepting feedback"
+                message: "This user is not accepting Whispas"
             });
+        }
+
+        // ✅ followers only check
+        if (receiver.followersOnly) {
+            const clerkId = req.auth()?.userId;
+            if (!clerkId) {
+                return res.status(401).json({
+                    success: false,
+                    message: "You must be logged in to send a Whispa"
+                });
+            }
+            const sender = await User.findOne({ clerkId });
+            if (!sender) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Sender not found"
+                });
+            }
+            const isFollower = receiver.followers.some(
+                (f) => f.toString() === sender._id.toString()
+            );
+            if (!isFollower) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Only followers can send a Whispa to this user"
+                });
+            }
         }
 
         const feedback = await Feedback.create({
@@ -36,7 +63,7 @@ export const sendFeedback = async (req, res, next) => {
 
         return res.status(201).json({
             success: true,
-            message: "Feedback sent successfully",
+            message: "Whispa sent successfully",
             data: feedback
         });
 
