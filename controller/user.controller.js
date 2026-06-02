@@ -65,7 +65,7 @@ export const updateUser = async (req, res, next) => {
     try {
         const clerkId = req.auth().userId;
 
-        const allowedUpdates = ["username", "email", "bio", "avatarUrl", "isAcceptingFeedback", "showFollowers", "showFollowing"];
+        const allowedUpdates = ["username", "email", "bio", "avatarUrl", "isAcceptingFeedback", "showFollowers", "showFollowing", "followersOnly"];
         const updates = {};
 
         for (let key of allowedUpdates) {
