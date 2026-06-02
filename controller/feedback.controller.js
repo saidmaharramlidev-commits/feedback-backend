@@ -45,7 +45,7 @@ export const sendFeedback = async (req, res, next) => {
                     message: "Sender not found"
                 });
             }
-            const isFollower = receiver.followers.some(
+            const isFollower = receiver.following.some(
                 (f) => f.toString() === sender._id.toString()
             );
             if (!isFollower) {
