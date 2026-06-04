@@ -1,5 +1,8 @@
 import Feedback from "../models/feedback.model.js";
 import User from "../models/user.model.js";
+import mongoose from "mongoose";
+
+// in the isAlreadyLiked block:
 
 export const sendFeedback = async (req, res, next) => {
     try {
@@ -184,9 +187,12 @@ export const toggleLikeFeedback = async (req, res, next) => {
                 isLiked: false,
                 expiresAt: new Date(Date.now() + 86400 * 1000)
             });
+
+
             await User.findByIdAndUpdate(user._id, {
-                $pull: { favoriteFeedbacks: feedback._id }
+                $pull: { favoriteFeedbacks: new mongoose.Types.ObjectId(id) }
             });
+
             return res.status(200).json({
                 success: true,
                 message: "Feedback unliked"
