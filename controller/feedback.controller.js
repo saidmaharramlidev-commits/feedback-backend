@@ -1,8 +1,7 @@
+import mongoose from "mongoose";
 import Feedback from "../models/feedback.model.js";
 import User from "../models/user.model.js";
-import mongoose from "mongoose";
 
-// in the isAlreadyLiked block:
 
 export const sendFeedback = async (req, res, next) => {
     try {
@@ -108,7 +107,6 @@ export const deleteFeedback = async (req, res, next) => {
         const clerkId = req.auth().userId;
         const { id } = req.params;
 
-        // ← find user by clerkId first
         const user = await User.findOne({ clerkId });
         if (!user) {
             return res.status(404).json({
@@ -125,7 +123,6 @@ export const deleteFeedback = async (req, res, next) => {
             });
         }
 
-        // ← compare with MongoDB _id
         if (feedback.receiverId.toString() !== user._id.toString()) {
             return res.status(403).json({
                 success: false,
@@ -134,6 +131,10 @@ export const deleteFeedback = async (req, res, next) => {
         }
 
         await Feedback.findByIdAndDelete(id);
+
+        await User.findByIdAndUpdate(user._id, {
+            $pull: { favoriteFeedbacks: new mongoose.Types.ObjectId(id) }
+        });
 
         return res.status(200).json({
             success: true,
