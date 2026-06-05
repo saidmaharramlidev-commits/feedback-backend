@@ -1,16 +1,31 @@
 import User from "../models/user.model.js";
-
 export const getUserByUsername = async (req, res, next) => {
     try {
         const { username } = req.params;
+        const clerkId = req.auth()?.userId;
 
         const user = await User.findOne({ username })
             .select("-password")
-            .populate("followers", "clerkId")
-            .populate("following", "clerkId")
+            .populate("followers", "clerkId _id")
+            .populate("following", "clerkId _id")
 
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        let isFollowedByThem = false;
+        let isFollowing = false;
+
+        if (clerkId) {
+            const currentUser = await User.findOne({ clerkId });
+            if (currentUser) {
+                isFollowedByThem = user.following.some(
+                    (f) => f._id.toString() === currentUser._id.toString()
+                );
+                isFollowing = user.followers.some(
+                    (f) => f._id.toString() === currentUser._id.toString()
+                );
+            }
         }
 
         return res.status(200).json({
@@ -19,6 +34,8 @@ export const getUserByUsername = async (req, res, next) => {
                 ...user.toObject(),
                 followers: user.showFollowers ? user.followers : [],
                 following: user.showFollowing ? user.following : [],
+                isFollowedByThem,
+                isFollowing,
             }
         });
 

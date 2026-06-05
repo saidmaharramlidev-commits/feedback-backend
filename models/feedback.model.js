@@ -11,7 +11,7 @@ const feedbackSchema = new mongoose.Schema(
             type: String,
             required: [true, 'Feedback text is required'],
             minlength: 2,
-            maxlength: 500,
+            maxlength: 200,
             trim: true,
         },
         isLiked: {
