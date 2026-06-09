@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import Feedback from "../models/feedback.model.js";
 import User from "../models/user.model.js";
+import { sendPushNotification } from "../config/expo.js";
+
 
 
 export const sendFeedback = async (req, res, next) => {
@@ -27,35 +29,8 @@ export const sendFeedback = async (req, res, next) => {
         if (!receiver.isAcceptingFeedback) {
             return res.status(403).json({
                 success: false,
-                message: "This user is not accepting Whispas"
+                message: "This user is not accepting feedback"
             });
-        }
-
-        // ✅ followers only check
-        if (receiver.followersOnly) {
-            const clerkId = req.auth()?.userId;
-            if (!clerkId) {
-                return res.status(401).json({
-                    success: false,
-                    message: "You must be logged in to send a Whispa"
-                });
-            }
-            const sender = await User.findOne({ clerkId });
-            if (!sender) {
-                return res.status(404).json({
-                    success: false,
-                    message: "Sender not found"
-                });
-            }
-            const isFollower = receiver.following.some(
-                (f) => f.toString() === sender._id.toString()
-            );
-            if (!isFollower) {
-                return res.status(403).json({
-                    success: false,
-                    message: "Only followers can send a Whispa to this user"
-                });
-            }
         }
 
         const feedback = await Feedback.create({
@@ -63,9 +38,16 @@ export const sendFeedback = async (req, res, next) => {
             text
         });
 
+        // send push notification to receiver
+        await sendPushNotification(
+            receiver.pushToken,
+            "New Whispa 💬",
+            "Someone sent you an anonymous feedback!"
+        );
+
         return res.status(201).json({
             success: true,
-            message: "Whispa sent successfully",
+            message: "Feedback sent successfully",
             data: feedback
         });
 

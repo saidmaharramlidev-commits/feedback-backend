@@ -41,6 +41,10 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: true
         },
+        pushToken: {
+            type: String,
+            default: null
+        },
         followersOnly: {
             type: Boolean,
             default: false

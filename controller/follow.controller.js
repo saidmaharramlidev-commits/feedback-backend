@@ -1,42 +1,50 @@
 import User from "../models/user.model.js";
 
+import { sendPushNotification } from "../config/expo.js";
+
 export const toggleFollow = async (req, res, next) => {
     try {
         const { username } = req.params;
-        const clerkId = req.auth().userId;
+        const { userId } = req.body;
 
-        if (!clerkId) {
-            return res.status(401).json({
+        if (!userId) {
+            return res.status(400).json({
                 success: false,
-                message: "Unauthorized"
+                message: "userId is required"
             });
         }
 
         const targetUser = await User.findOne({ username });
         if (!targetUser) {
-            return res.status(404).json({ success: false, message: "User not found" });
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
         }
 
-        const currentUser = await User.findOne({ clerkId });
-        if (!currentUser) {
-            return res.status(404).json({ success: false, message: "Follower user not found" });
-        }
-
-        if (targetUser._id.toString() === currentUser._id.toString()) {
+        if (targetUser._id.toString() === userId) {
             return res.status(400).json({
                 success: false,
                 message: "You cannot follow yourself"
             });
         }
 
+        const currentUser = await User.findById(userId);
+        if (!currentUser) {
+            return res.status(404).json({
+                success: false,
+                message: "Follower user not found"
+            });
+        }
+
         const isFollowing = currentUser.following.includes(targetUser._id);
 
         if (isFollowing) {
-            await User.findByIdAndUpdate(currentUser._id, {
+            await User.findByIdAndUpdate(userId, {
                 $pull: { following: targetUser._id }
             });
             await User.findByIdAndUpdate(targetUser._id, {
-                $pull: { followers: currentUser._id }
+                $pull: { followers: userId }
             });
 
             return res.status(200).json({
@@ -44,12 +52,19 @@ export const toggleFollow = async (req, res, next) => {
                 message: "Unfollowed successfully"
             });
         } else {
-            await User.findByIdAndUpdate(currentUser._id, {
+            await User.findByIdAndUpdate(userId, {
                 $push: { following: targetUser._id }
             });
             await User.findByIdAndUpdate(targetUser._id, {
-                $push: { followers: currentUser._id }
+                $push: { followers: userId }
             });
+
+            // send push notification to target user
+            await sendPushNotification(
+                targetUser.pushToken,
+                "New Follower 🎉",
+                `${currentUser.username} started following you!`
+            );
 
             return res.status(200).json({
                 success: true,
