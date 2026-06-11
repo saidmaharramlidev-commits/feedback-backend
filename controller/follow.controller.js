@@ -5,7 +5,7 @@ import { sendPushNotification } from "../config/expo.js";
 export const toggleFollow = async (req, res, next) => {
     try {
         const { username } = req.params;
-        const { userId } = req.body;
+        const { userId } = req.auth().userId;
 
         if (!userId) {
             return res.status(400).json({
