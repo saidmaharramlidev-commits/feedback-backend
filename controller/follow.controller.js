@@ -5,12 +5,12 @@ import { sendPushNotification } from "../config/expo.js";
 export const toggleFollow = async (req, res, next) => {
     try {
         const { username } = req.params;
-        const userId = req.auth().userId;
+        const clerkId = req.auth().userId;
 
-        if (!userId) {
+        if (!clerkId) {
             return res.status(400).json({
                 success: false,
-                message: "userId is required"
+                message: "Unauthorized"
             });
         }
 
@@ -22,29 +22,30 @@ export const toggleFollow = async (req, res, next) => {
             });
         }
 
-        if (targetUser._id.toString() === userId) {
+        // find current user by clerkId
+        const currentUser = await User.findOne({ clerkId });
+        if (!currentUser) {
+            return res.status(404).json({
+                success: false,
+                message: "Current user not found"
+            });
+        }
+
+        if (targetUser._id.toString() === currentUser._id.toString()) {
             return res.status(400).json({
                 success: false,
                 message: "You cannot follow yourself"
             });
         }
 
-        const currentUser = await User.findById(userId);
-        if (!currentUser) {
-            return res.status(404).json({
-                success: false,
-                message: "Follower user not found"
-            });
-        }
-
         const isFollowing = currentUser.following.includes(targetUser._id);
 
         if (isFollowing) {
-            await User.findByIdAndUpdate(userId, {
+            await User.findByIdAndUpdate(currentUser._id, {
                 $pull: { following: targetUser._id }
             });
             await User.findByIdAndUpdate(targetUser._id, {
-                $pull: { followers: userId }
+                $pull: { followers: currentUser._id }
             });
 
             return res.status(200).json({
@@ -52,14 +53,13 @@ export const toggleFollow = async (req, res, next) => {
                 message: "Unfollowed successfully"
             });
         } else {
-            await User.findByIdAndUpdate(userId, {
+            await User.findByIdAndUpdate(currentUser._id, {
                 $push: { following: targetUser._id }
             });
             await User.findByIdAndUpdate(targetUser._id, {
-                $push: { followers: userId }
+                $push: { followers: currentUser._id }
             });
 
-            // send push notification to target user
             await sendPushNotification(
                 targetUser.pushToken,
                 "New Follower 🎉",
