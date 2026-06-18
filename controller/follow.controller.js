@@ -124,3 +124,54 @@ export const getFollowing = async (req, res, next) => {
         next(error);
     }
 };
+
+
+export const removeFollower = async (req, res, next) => {
+    try {
+        const { username } = req.params;
+        const clerkId = req.auth().userId;
+
+        if (!clerkId) {
+            return res.status(400).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+
+        // current user (the one removing)
+        const currentUser = await User.findOne({ clerkId });
+        if (!currentUser) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // follower to remove
+        const followerUser = await User.findOne({ username });
+        if (!followerUser) {
+            return res.status(404).json({
+                success: false,
+                message: "Follower not found"
+            });
+        }
+
+        // remove follower from current user's followers
+        await User.findByIdAndUpdate(currentUser._id, {
+            $pull: { followers: followerUser._id }
+        });
+
+        // remove current user from follower's following
+        await User.findByIdAndUpdate(followerUser._id, {
+            $pull: { following: currentUser._id }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Follower removed"
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
