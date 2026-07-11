@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema(
             maxLength: [100, 'Email cannot exceed 100 characters'],
             match: [/\S+@\S+\.\S+/, 'Please provide a valid email address']
         },
+        blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }],
         following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 

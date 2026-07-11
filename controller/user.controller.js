@@ -192,3 +192,77 @@ export const syncUser = async (req, res, next) => {
 };
 
 
+export const blockUser = async (req, res, next) => {
+    try {
+        const { username } = req.params;
+        const clerkId = req.auth().userId;
+
+        if (!clerkId) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        const currentUser = await User.findOne({ clerkId });
+        if (!currentUser) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const targetUser = await User.findOne({ username });
+        if (!targetUser) {
+            return res.status(404).json({ success: false, message: "Target user not found" });
+        }
+
+        if (currentUser._id.toString() === targetUser._id.toString()) {
+            return res.status(400).json({ success: false, message: "You cannot block yourself" });
+        }
+
+        const isAlreadyBlocked = currentUser.blockedUsers.includes(targetUser._id);
+
+        if (isAlreadyBlocked) {
+            // unblock
+            await User.findByIdAndUpdate(currentUser._id, {
+                $pull: { blockedUsers: targetUser._id }
+            });
+            return res.status(200).json({ success: true, message: "User unblocked" });
+        } else {
+            // block — also remove from followers/following
+            await User.findByIdAndUpdate(currentUser._id, {
+                $addToSet: { blockedUsers: targetUser._id },
+                $pull: { followers: targetUser._id, following: targetUser._id }
+            });
+            await User.findByIdAndUpdate(targetUser._id, {
+                $pull: { followers: currentUser._id, following: currentUser._id }
+            });
+            return res.status(200).json({ success: true, message: "User blocked" });
+        }
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const reportUser = async (req, res, next) => {
+    try {
+        const { username } = req.params;
+        const clerkId = req.auth().userId;
+        const { reason } = req.body;
+
+        if (!clerkId) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        const currentUser = await User.findOne({ clerkId });
+        const targetUser = await User.findOne({ username });
+
+        if (!currentUser || !targetUser) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        // for now just log — later can save to a reports collection
+        console.log(`REPORT: ${currentUser.username} reported ${targetUser.username} — reason: ${reason || "No reason provided"}`);
+
+        return res.status(200).json({ success: true, message: "User reported" });
+
+    } catch (error) {
+        next(error);
+    }
+};

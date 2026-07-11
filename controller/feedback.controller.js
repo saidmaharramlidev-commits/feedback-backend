@@ -18,7 +18,6 @@ export const sendFeedback = async (req, res, next) => {
         }
 
         const receiver = await User.findOne({ username });
-
         if (!receiver) {
             return res.status(404).json({
                 success: false,
@@ -33,12 +32,24 @@ export const sendFeedback = async (req, res, next) => {
             });
         }
 
+        // check if sender is blocked — need sender's clerkId
+        // sendFeedback is public (no auth) so we check optionally
+        const clerkId = req.auth?.()?.userId;
+        if (clerkId) {
+            const sender = await User.findOne({ clerkId });
+            if (sender && receiver.blockedUsers.includes(sender._id)) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You cannot send a whispa to this user"
+                });
+            }
+        }
+
         const feedback = await Feedback.create({
             receiverId: receiver._id,
             text
         });
 
-        // send push notification to receiver
         await sendPushNotification(
             receiver.pushToken,
             "New Whispa 💬",
