@@ -8,7 +8,7 @@ import { sendPushNotification } from "../config/expo.js";
 export const sendFeedback = async (req, res, next) => {
     try {
         const { username } = req.params;
-        const { text } = req.body;
+        const { text, senderUsername } = req.body;
 
         if (!text) {
             return res.status(400).json({
@@ -47,7 +47,8 @@ export const sendFeedback = async (req, res, next) => {
 
         const feedback = await Feedback.create({
             receiverId: receiver._id,
-            text
+            text,
+            senderUsername: senderUsername || null,
         });
 
         await sendPushNotification(

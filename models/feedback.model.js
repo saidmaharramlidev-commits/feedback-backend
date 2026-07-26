@@ -7,6 +7,10 @@ const feedbackSchema = new mongoose.Schema(
             ref: 'User',
             required: [true, 'Receiver user id is required'],
         },
+        senderUsername: {
+            type: String,
+            default: null
+        },
         text: {
             type: String,
             required: [true, 'Feedback text is required'],
