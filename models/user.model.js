@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema(
         blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }],
         following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+        isPremium: { type: Boolean, default: false },
 
         bio: {
             type: String,
