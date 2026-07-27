@@ -11,6 +11,10 @@ const feedbackSchema = new mongoose.Schema(
             type: String,
             default: null
         },
+        senderId: {
+            type: String,
+            default: null
+        },
         text: {
             type: String,
             required: [true, 'Feedback text is required'],

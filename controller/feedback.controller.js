@@ -9,6 +9,8 @@ export const sendFeedback = async (req, res, next) => {
     try {
         const { username } = req.params;
         const { text, senderUsername } = req.body;
+        const clerkId = req.auth?.()?.userId;
+        const senderClerkId = clerkId || null;
 
         if (!text) {
             return res.status(400).json({
@@ -32,9 +34,6 @@ export const sendFeedback = async (req, res, next) => {
             });
         }
 
-        // check if sender is blocked — need sender's clerkId
-        // sendFeedback is public (no auth) so we check optionally
-        const clerkId = req.auth?.()?.userId;
         if (clerkId) {
             const sender = await User.findOne({ clerkId });
             if (sender && receiver.blockedUsers.includes(sender._id)) {
@@ -49,6 +48,7 @@ export const sendFeedback = async (req, res, next) => {
             receiverId: receiver._id,
             text,
             senderUsername: senderUsername || null,
+            senderId: senderClerkId,
         });
 
         await sendPushNotification(
@@ -67,6 +67,9 @@ export const sendFeedback = async (req, res, next) => {
         next(error);
     }
 };
+
+
+
 
 export const getMyFeedbacks = async (req, res, next) => {
     try {

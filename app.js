@@ -8,6 +8,7 @@ import arcjetMiddleware from './middleware/arcjet.middleware.js';
 import feedbackRouter from './routes/feedback.route.js';
 import followRouter from './routes/follow.route.js';
 import { clerkMiddleware } from '@clerk/express';
+import replyRouter from "./routes/reply.route.js";
 import redirectRouter from "./routes/redirect.route.js";
 
 
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
 app.use('/users', userRouter)    // ← just one registration
 app.use("/users", followRouter)
 app.use('/feedbacks', feedbackRouter)
+app.use("/replies", replyRouter);
 app.use("/u", redirectRouter);
 
 
