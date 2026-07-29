@@ -10,6 +10,8 @@ import followRouter from './routes/follow.route.js';
 import { clerkMiddleware } from '@clerk/express';
 import replyRouter from "./routes/reply.route.js";
 import redirectRouter from "./routes/redirect.route.js";
+import streakRouter from "./routes/streak.route.js";
+
 
 
 const app = express();
@@ -28,6 +30,7 @@ app.use("/users", followRouter)
 app.use('/feedbacks', feedbackRouter)
 app.use("/replies", replyRouter);
 app.use("/u", redirectRouter);
+app.use("/streaks", streakRouter);
 
 
 app.use(errorMiddleware)

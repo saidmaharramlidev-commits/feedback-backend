@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Feedback from "../models/feedback.model.js";
 import User from "../models/user.model.js";
 import { sendPushNotification } from "../config/expo.js";
+import { updateStreak } from "./streak.controller.js";
 
 
 
@@ -9,8 +10,6 @@ export const sendFeedback = async (req, res, next) => {
     try {
         const { username } = req.params;
         const { text, senderUsername } = req.body;
-        const clerkId = req.auth?.()?.userId;
-        const senderClerkId = clerkId || null;
 
         if (!text) {
             return res.status(400).json({
@@ -34,9 +33,11 @@ export const sendFeedback = async (req, res, next) => {
             });
         }
 
+        const clerkId = req.auth?.()?.userId;
+
         if (clerkId) {
             const sender = await User.findOne({ clerkId });
-            if (sender && receiver.blockedUsers.includes(sender._id)) {
+            if (sender && receiver.blockedUsers?.includes(sender._id)) {
                 return res.status(403).json({
                     success: false,
                     message: "You cannot send a whispa to this user"
@@ -48,8 +49,13 @@ export const sendFeedback = async (req, res, next) => {
             receiverId: receiver._id,
             text,
             senderUsername: senderUsername || null,
-            senderId: senderClerkId,
+            senderId: clerkId || null,
         });
+
+        // update streak if sender is logged in
+        if (clerkId) {
+            await updateStreak(clerkId);
+        }
 
         await sendPushNotification(
             receiver.pushToken,
