@@ -17,10 +17,9 @@ const feedbackSchema = new mongoose.Schema(
         },
         text: {
             type: String,
-            required: [true, 'Feedback text is required'],
-            minlength: 2,
-            maxlength: 200,
             trim: true,
+            maxLength: [200, 'Feedback cannot exceed 200 characters'],
+            default: null
         },
         isLiked: {
             type: Boolean,
@@ -29,7 +28,16 @@ const feedbackSchema = new mongoose.Schema(
         expiresAt: {
             type: Date,
             default: () => new Date(Date.now() + 86400 * 1000)
-        }
+        },
+        type: {
+            type: String,
+            enum: ["text", "voice"],
+            default: "text"
+        },
+        audioUrl: {
+            type: String,
+            default: null
+        },
     }, { timestamps: true }
 )
 

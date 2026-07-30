@@ -9,12 +9,13 @@ import { updateStreak } from "./streak.controller.js";
 export const sendFeedback = async (req, res, next) => {
     try {
         const { username } = req.params;
-        const { text, senderUsername } = req.body;
+        const { text, senderUsername, audioUrl, type } = req.body;
 
-        if (!text) {
+        // validate — must have either text or audioUrl
+        if (!text && !audioUrl) {
             return res.status(400).json({
                 success: false,
-                message: "Feedback text is required"
+                message: "Whispa must have text or audio"
             });
         }
 
@@ -35,12 +36,17 @@ export const sendFeedback = async (req, res, next) => {
 
         const clerkId = req.auth?.()?.userId;
 
-        // check daily whispa limit for free users
         if (clerkId) {
             const sender = await User.findOne({ clerkId });
+            if (sender && receiver.blockedUsers?.includes(sender._id)) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You cannot send a whispa to this user"
+                });
+            }
 
-            if (sender && !sender.isPremium) {
-                // count whispas sent today by this user
+            // check daily limit for free users (text only — voice is premium anyway)
+            if (sender && !sender.isPremium && type !== "voice") {
                 const startOfDay = new Date();
                 startOfDay.setHours(0, 0, 0, 0);
 
@@ -56,16 +62,26 @@ export const sendFeedback = async (req, res, next) => {
                     });
                 }
             }
+
+            // check premium for voice
+            if (type === "voice" && sender && !sender.isPremium) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Premium required to send voice whispas"
+                });
+            }
         }
 
         const feedback = await Feedback.create({
             receiverId: receiver._id,
-            text,
+            text: text || null,
             senderUsername: senderUsername || null,
             senderId: clerkId || null,
+            type: type || "text",
+            audioUrl: audioUrl || null,
         });
 
-        // update streak if sender is logged in
+        // update streak
         if (clerkId) {
             await updateStreak(clerkId);
         }
@@ -73,7 +89,9 @@ export const sendFeedback = async (req, res, next) => {
         await sendPushNotification(
             receiver.pushToken,
             "New Whispa 💬",
-            "Someone sent you an anonymous feedback!"
+            type === "voice"
+                ? "Someone sent you a voice whispa! 🎤"
+                : "Someone sent you an anonymous whispa!"
         );
 
         return res.status(201).json({
