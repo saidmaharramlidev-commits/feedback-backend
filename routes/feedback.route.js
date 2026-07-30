@@ -2,6 +2,7 @@ import { Router } from "express";
 import { getMyFeedbacks, sendFeedback, deleteFeedback, getLikedFeedbacks } from "../controller/feedback.controller.js";
 import { requireAuth } from "@clerk/express";
 import { toggleLikeFeedback } from "../controller/feedback.controller.js";
+import { getDailyCount } from "../controller/feedback.controller.js";
 
 const feedbackRouter = Router();
 
