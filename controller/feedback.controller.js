@@ -35,13 +35,26 @@ export const sendFeedback = async (req, res, next) => {
 
         const clerkId = req.auth?.()?.userId;
 
+        // check daily whispa limit for free users
         if (clerkId) {
             const sender = await User.findOne({ clerkId });
-            if (sender && receiver.blockedUsers?.includes(sender._id)) {
-                return res.status(403).json({
-                    success: false,
-                    message: "You cannot send a whispa to this user"
+
+            if (sender && !sender.isPremium) {
+                // count whispas sent today by this user
+                const startOfDay = new Date();
+                startOfDay.setHours(0, 0, 0, 0);
+
+                const todayCount = await Feedback.countDocuments({
+                    senderId: clerkId,
+                    createdAt: { $gte: startOfDay }
                 });
+
+                if (todayCount >= 10) {
+                    return res.status(429).json({
+                        success: false,
+                        message: "Daily limit reached"
+                    });
+                }
             }
         }
 
