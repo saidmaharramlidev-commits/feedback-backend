@@ -255,3 +255,25 @@ export const getLikedFeedbacks = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getDailyCount = async (req, res, next) => {
+    try {
+        const clerkId = req.auth().userId;
+
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const count = await Feedback.countDocuments({
+            senderId: clerkId,
+            createdAt: { $gte: startOfDay }
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: { count, limit: 10 }
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};

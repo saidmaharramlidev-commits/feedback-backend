@@ -8,6 +8,7 @@ const feedbackRouter = Router();
 
 feedbackRouter.get("/me", requireAuth(), getMyFeedbacks);
 feedbackRouter.get("/liked", requireAuth(), getLikedFeedbacks);
+feedbackRouter.get("/daily-count", requireAuth(), getDailyCount);
 feedbackRouter.post("/:username", sendFeedback);
 
 feedbackRouter.delete("/:id", requireAuth(), deleteFeedback);
