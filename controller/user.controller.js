@@ -1,4 +1,9 @@
 import User from "../models/user.model.js";
+import { sendWelcomeWhispas } from "./feedback.controller.js";
+
+
+
+
 export const getUserByUsername = async (req, res, next) => {
     try {
         const { username } = req.params;
@@ -180,6 +185,8 @@ export const syncUser = async (req, res, next) => {
             username,
             email,
         });
+
+        await sendWelcomeWhispas(newUser._id);
 
         return res.status(201).json({
             success: true,

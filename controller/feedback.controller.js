@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
+import { sendPushNotification } from "../config/expo.js";
 import Feedback from "../models/feedback.model.js";
 import User from "../models/user.model.js";
-import { sendPushNotification } from "../config/expo.js";
 import { updateStreak } from "./streak.controller.js";
 
 
@@ -293,5 +293,36 @@ export const getDailyCount = async (req, res, next) => {
 
     } catch (error) {
         next(error);
+    }
+};
+
+export const sendWelcomeWhispas = async (receiverId) => {
+    try {
+        const systemUser = await User.findOne({ clerkId: "system" });
+        if (!systemUser) {
+            console.log("System user not found");
+            return;
+        }
+
+        const welcomeWhispas = [
+            "🔗 Share your profile link or QR code with friends and start receiving your first real whispas!",
+            "❤️ Swipe right to like a whispa, swipe left to delete it. Liked whispas are saved so you can revisit them anytime.",
+            "👋 Welcome to WhispaMe! This is an anonymous feedback app — people can send you honest thoughts without revealing who they are.",
+        ];
+
+        for (const text of welcomeWhispas) {
+            await Feedback.create({
+                receiverId,
+                text,
+                type: "text",
+                senderId: "system",
+                senderUsername: null,
+                audioUrl: null,
+            });
+        }
+
+        console.log("Welcome whispas sent to:", receiverId);
+    } catch (error) {
+        console.error("Failed to send welcome whispas:", error);
     }
 };
