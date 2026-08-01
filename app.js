@@ -1,16 +1,16 @@
-import './config/env.js'
+import { clerkMiddleware } from '@clerk/express';
 import express from 'express';
+import './config/env.js';
 import { PORT } from './config/env.js';
-import userRouter from './routes/user.route.js';
 import connectToDatabase from './database/mongodb.js';
-import errorMiddleware from './middleware/error.middleware.js';
 import arcjetMiddleware from './middleware/arcjet.middleware.js';
+import errorMiddleware from './middleware/error.middleware.js';
 import feedbackRouter from './routes/feedback.route.js';
 import followRouter from './routes/follow.route.js';
-import { clerkMiddleware } from '@clerk/express';
-import replyRouter from "./routes/reply.route.js";
 import redirectRouter from "./routes/redirect.route.js";
+import replyRouter from "./routes/reply.route.js";
 import streakRouter from "./routes/streak.route.js";
+import userRouter from './routes/user.route.js';
 
 
 
@@ -20,6 +20,11 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(clerkMiddleware())
 app.use(arcjetMiddleware)
+
+app.use((req, res, next) => {
+    console.log("Incoming request:", req.method, req.path);
+    next();
+});
 
 app.get('/', (req, res) => {
     res.send({ message: 'Welcome to Feedback App' })
