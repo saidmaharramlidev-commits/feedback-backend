@@ -186,7 +186,7 @@ export const syncUser = async (req, res, next) => {
             email,
         });
 
-        await sendWelcomeWhispas(newUser._id);
+        await sendWelcomeWhispas(user._id);
 
         return res.status(201).json({
             success: true,
