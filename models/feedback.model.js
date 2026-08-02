@@ -31,10 +31,14 @@ const feedbackSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ["text", "voice"],
+            enum: ["text", "voice", "image"],
             default: "text"
         },
         audioUrl: {
+            type: String,
+            default: null
+        },
+        imageUrl: {
             type: String,
             default: null
         },

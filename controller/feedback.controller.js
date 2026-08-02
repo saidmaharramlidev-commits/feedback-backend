@@ -9,13 +9,13 @@ import { updateStreak } from "./streak.controller.js";
 export const sendFeedback = async (req, res, next) => {
     try {
         const { username } = req.params;
-        const { text, senderUsername, audioUrl, type } = req.body;
+        const { text, senderUsername, audioUrl, type, imageUrl } = req.body;
 
         // validate — must have either text or audioUrl
-        if (!text && !audioUrl) {
+        if (!text && !audioUrl && !imageUrl) {
             return res.status(400).json({
                 success: false,
-                message: "Whispa must have text or audio"
+                message: "Whispa must have text, audio, or image"
             });
         }
 
@@ -70,6 +70,14 @@ export const sendFeedback = async (req, res, next) => {
                     message: "Premium required to send voice whispas"
                 });
             }
+
+
+            if (type === "image" && sender && !sender.isPremium) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Premium required to send image whispas"
+                });
+            }
         }
 
         const feedback = await Feedback.create({
@@ -79,6 +87,7 @@ export const sendFeedback = async (req, res, next) => {
             senderId: clerkId || null,
             type: type || "text",
             audioUrl: audioUrl || null,
+            imageUrl: imageUrl || null,
         });
 
         // update streak
@@ -91,7 +100,9 @@ export const sendFeedback = async (req, res, next) => {
             "New Whispa 💬",
             type === "voice"
                 ? "Someone sent you a voice whispa! 🎤"
-                : "Someone sent you an anonymous whispa!"
+                : type === "image"
+                    ? "Someone sent you an image whispa! 🖼️"
+                    : "Someone sent you an anonymous whispa!"
         );
 
         return res.status(201).json({
