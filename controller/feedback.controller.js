@@ -337,3 +337,60 @@ export const sendWelcomeWhispas = async (receiverId) => {
         console.error("Failed to send welcome whispas:", error);
     }
 };
+
+export const reportFeedback = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const clerkId = req.auth().userId;
+
+        if (!clerkId) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        // get receiver (current user)
+        const receiver = await User.findOne({ clerkId });
+        if (!receiver) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        // get the feedback
+        const feedback = await Feedback.findById(id);
+        if (!feedback) {
+            return res.status(404).json({ success: false, message: "Whispa not found" });
+        }
+
+        // make sure current user is the receiver
+        if (feedback.receiverId.toString() !== receiver._id.toString()) {
+            return res.status(403).json({ success: false, message: "Not allowed" });
+        }
+
+        // if sender is known — block them
+        if (feedback.senderId) {
+            const sender = await User.findOne({ clerkId: feedback.senderId });
+            if (sender) {
+                // add sender to receiver's blocked list + remove from followers
+                await User.findByIdAndUpdate(receiver._id, {
+                    $addToSet: { blockedUsers: sender._id },
+                    $pull: { followers: sender._id, following: sender._id }
+                });
+                // remove receiver from sender's followers/following
+                await User.findByIdAndUpdate(sender._id, {
+                    $pull: { followers: receiver._id, following: receiver._id }
+                });
+
+                console.log(`REPORT: ${receiver.username} reported and blocked ${sender.username}`);
+            }
+        }
+
+        // delete the reported whispa
+        await Feedback.findByIdAndDelete(id);
+
+        return res.status(200).json({
+            success: true,
+            message: "Whispa reported and sender blocked"
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
