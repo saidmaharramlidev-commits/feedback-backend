@@ -20,6 +20,7 @@ export const getUserByUsername = async (req, res, next) => {
 
         let isFollowedByThem = false;
         let isFollowing = false;
+        let isBlockedByThem = false;
 
         if (clerkId) {
             const currentUser = await User.findOne({ clerkId });
@@ -30,6 +31,10 @@ export const getUserByUsername = async (req, res, next) => {
                 isFollowing = user.followers.some(
                     (f) => f._id.toString() === currentUser._id.toString()
                 );
+
+                isBlockedByThem = user.blockedUsers?.some(
+                    (id) => id.toString() === currentUser._id.toString()
+                ) ?? false;
             }
         }
 
@@ -41,6 +46,7 @@ export const getUserByUsername = async (req, res, next) => {
                 following: user.showFollowing ? user.following : [],
                 isFollowedByThem,
                 isFollowing,
+                isBlockedByThem, // ← add this
             }
         });
 
@@ -48,7 +54,6 @@ export const getUserByUsername = async (req, res, next) => {
         next(error);
     }
 };
-
 
 export const getMe = async (req, res, next) => {
     try {
