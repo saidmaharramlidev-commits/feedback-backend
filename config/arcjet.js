@@ -6,12 +6,18 @@ import { ARCJET_KEY } from "./env.js";
 const aj = arcjet({
     key: ARCJET_KEY,
     rules: [
-        shield({ mode: "DRY_RUN" }), // ← won't block, just logs
+        shield({ mode: "LIVE" }),
         tokenBucket({
             mode: "LIVE",
-            refillRate: 20, // ← increase from 5
+            characteristics: ["userId"], // ← key by this instead of IP
+            refillRate: 20,
             interval: 10,
-            capacity: 50, // ← increase from 10
+            capacity: 50,
+
+        }),
+        detectBot({
+            mode: "LIVE",
+            allow: [],
         }),
     ],
 });
