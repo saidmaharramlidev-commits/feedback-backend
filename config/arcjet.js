@@ -13,10 +13,6 @@ const aj = arcjet({
             interval: 10,
             capacity: 50, // ← increase from 10
         }),
-        detectBot({
-            mode: "LIVE",
-            allow: [],
-        }),
     ],
 });
 export default aj;
