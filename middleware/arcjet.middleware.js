@@ -5,10 +5,7 @@ const arcjetMiddleware = async (req, res, next) => {
     if (req.path === '/users/sync') return next()
 
     try {
-        const decision = await aj.protect(req, {
-            requested: 1,
-            userId: req.auth()?.userId || req.ip,
-        });
+        const decision = await aj.protect(req, { requested: 1 });
 
         if (decision.isDenied()) {
             if (decision.reason.isRateLimit()) {
