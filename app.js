@@ -10,6 +10,7 @@ import redirectRouter from "./routes/redirect.route.js";
 import replyRouter from "./routes/reply.route.js";
 import streakRouter from "./routes/streak.route.js";
 import userRouter from './routes/user.route.js';
+import wellKnownRouter from "./routes/wellknown.route.js";
 
 
 
@@ -34,6 +35,7 @@ app.use('/feedbacks', feedbackRouter)
 app.use("/replies", replyRouter);
 app.use("/u", redirectRouter);
 app.use("/streaks", streakRouter);
+app.use("/.well-known", wellKnownRouter);
 
 
 app.use(errorMiddleware)
