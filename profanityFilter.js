@@ -1,36 +1,44 @@
-// backend/lib/profanityFilter.js
+const forbiddenWords = [
+    // English
+    "nigger", "faggot", "retard", "spic", "kike", "nigga", "fck",
+    "cunt", "fuck", "shit", "ass", "bitch", "asshole", "cock", "suck",
+    "vagina", "penis", "squirt", "orgasm", "dildo", "vibrator",
 
-const bannedWords = {
-    en: [
-        "nigger", "nigga", "faggot", "retard", "spic", "kike", "fagot",
-        "cunt", "fuck", "fck", "shit", "bitch", "asshole", "cock",
-        "vagina", "penis", "squirt", "orgasm", "lesbian", "transgen", 'bisexual', 'gay', 'les', 'sex'
-    ],
-    az: [
-        "göt", "sik", "amcıq", "orospu", "qəhbə", "döş", "peysər",
-        "pesi", "besmantov", "vajina", "orgazm", 'seks',
-    ],
-    tr: [
-        "amcık", "orul", "kahpe", "yarrak", "piç",
-    ],
-};
+    // Azerbaijani
+    "göt", "sik", "amcıq", "orospu", "qəhbə", "döş", "peysər", "pesi", "besmantov", "s2", "gey", "vajina", "orgazm",
 
-// Words under ~3 characters are too collision-prone across languages
-// to safely auto-block on their own — kept separate for now, wired in later.
-const highRiskShortWords = {
-    az: ["am", "s2", "gey"],
-    tr: ["am", "sik"],
-};
+    // Turkish
+    "amcık", "orul", "kahpe",
+];
 
 function normalize(text) {
-    return text
-        .toLowerCase()
+    let t = text.toLowerCase();
+
+    t = t.replace(/[\u200B-\u200D\uFEFF\u00AD]/g, "");
+
+    t = t.replace(/(.)\1{2,}/g, "$1");
+
+    t = t.replace(/[\s\-_.*]+(?=[a-zçğıöşü])/g, "");
+
+    t = t
         .replace(/[04]/g, "o")
-        .replace(/[1!|]/g, "i")
-        .replace(/3/g, "e")
+        .replace(/[1!|íìî]/g, "i")
+        .replace(/[3€éèê]/g, "e")
         .replace(/\$/g, "s")
-        .replace(/@/g, "a")
-        .replace(/\s+/g, " ");
+        .replace(/[5]/g, "s")
+        .replace(/[@]/g, "a")
+        .replace(/[7+]/g, "t")
+        .replace(/[8]/g, "b")
+        .replace(/[9]/g, "g")
+        .replace(/[ç]/g, "c")
+        .replace(/[ğ]/g, "g")
+        .replace(/[ı]/g, "i")
+        .replace(/[ö]/g, "o")
+        .replace(/[ş]/g, "s")
+        .replace(/[ü]/g, "u")
+        .replace(/[ə]/g, "e");
+
+    return t.replace(/\s+/g, " ").trim();
 }
 
 function buildWordRegex(word) {
@@ -38,13 +46,8 @@ function buildWordRegex(word) {
     return new RegExp(`(?<!\\p{L})${escaped}(?!\\p{L})`, "giu");
 }
 
-function containsProfanity(text) {
+export const containsProfanity = (text) => {
     if (!text) return false;
-
-    const normalized = normalize(text);
-    const allMainWords = [...bannedWords.en, ...bannedWords.az, ...bannedWords.tr];
-
-    return allMainWords.some((word) => buildWordRegex(word).test(normalized));
-}
-
-export { bannedWords, buildWordRegex, containsProfanity, highRiskShortWords, normalize };
+    const normalizedText = normalize(text);
+    return forbiddenWords.some((word) => buildWordRegex(normalize(word)).test(normalizedText));
+};
