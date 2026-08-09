@@ -3,6 +3,7 @@ import { sendPushNotification } from "../config/expo.js";
 import Feedback from "../models/feedback.model.js";
 import User from "../models/user.model.js";
 import { updateStreak } from "./streak.controller.js";
+import { containsProfanity } from "../profanityFilter.js";
 
 
 
@@ -16,6 +17,14 @@ export const sendFeedback = async (req, res, next) => {
             return res.status(400).json({
                 success: false,
                 message: "Whispa must have text, audio, or image"
+            });
+        }
+
+        // block profanity/slurs in text whispas
+        if (text && containsProfanity(text)) {
+            return res.status(400).json({
+                success: false,
+                message: "Your whispa contains inappropriate language"
             });
         }
 

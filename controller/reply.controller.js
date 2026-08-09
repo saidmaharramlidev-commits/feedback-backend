@@ -2,6 +2,8 @@ import Reply from "../models/reply.model.js";
 import Feedback from "../models/feedback.model.js";
 import User from "../models/user.model.js";
 import { sendPushNotification } from "../config/expo.js";
+import { containsProfanity } from "../profanityFilter.js";
+
 
 // premium receiver sends reply to whispa sender
 export const sendReply = async (req, res, next) => {
@@ -14,6 +16,14 @@ export const sendReply = async (req, res, next) => {
             return res.status(400).json({
                 success: false,
                 message: "Reply text is required"
+            });
+        }
+
+        // block profanity/slurs in replies
+        if (containsProfanity(text)) {
+            return res.status(400).json({
+                success: false,
+                message: "Your reply contains inappropriate language"
             });
         }
 
