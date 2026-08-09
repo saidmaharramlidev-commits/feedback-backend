@@ -2,13 +2,13 @@
 
 const bannedWords = {
     en: [
-        "nigger", "nigga", "faggot", "retard", "spic", "kike",
+        "nigger", "nigga", "faggot", "retard", "spic", "kike", "fagot",
         "cunt", "fuck", "fck", "shit", "bitch", "asshole", "cock",
-        "vagina", "penis", "squirt", "orgasm",
+        "vagina", "penis", "squirt", "orgasm", "lesbian", "transgen", 'bisexual', 'gay', 'les', 'sex'
     ],
     az: [
         "göt", "sik", "amcıq", "orospu", "qəhbə", "döş", "peysər",
-        "pesi", "besmantov", "vajina", "orgazm",
+        "pesi", "besmantov", "vajina", "orgazm", 'seks',
     ],
     tr: [
         "amcık", "orul", "kahpe", "yarrak", "piç",
